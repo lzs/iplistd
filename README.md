@@ -40,3 +40,4 @@ curl -X POST "http://localhost:8000/ip-filters/" \
        "ip_address": "203.0.113.45",
        "timeout_minutes": 30
      }'
+
