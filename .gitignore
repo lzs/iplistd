@@ -1,5 +1,6 @@
 __pycache__/
-.venv/
 ip_filter.db
 test_client_auth.py
-.local/
+# Ignore things like .venv/, .env, but we still want .ignore
+.*
+!.gitignore
