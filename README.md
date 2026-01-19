@@ -41,3 +41,6 @@ curl -X POST "http://localhost:8000/ip-filters/" \
        "timeout_minutes": 30
      }'
 
+## shunip.py
+
+Script to add IP to the ban list. Retrieves API key via vault.
