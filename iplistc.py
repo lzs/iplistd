@@ -36,7 +36,6 @@ def main():
         print("Error: Could not retrieve API key from Vault.", file=sys.stderr)
         sys.exit(1)
 
-    print(f"API Key: {apikey}")
     url = f"{iplist_addr.rstrip('/')}/ip-filters/"
     headers = {
         'accept': 'application/json',
