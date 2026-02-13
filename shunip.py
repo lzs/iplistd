@@ -9,8 +9,8 @@ from vault import vault_read
 load_dotenv()
 
 def main():
-    parser = argparse.ArgumentParser(description="Shun an IP address.")
-    parser.add_argument("ip_address", help="IP address to shun")
+    parser = argparse.ArgumentParser(description="IP list management.")
+    parser.add_argument("ip_address", help="IP address to add")
     parser.add_argument("timeout", type=int, nargs="?", default=1440, help="Timeout in minutes (default: 1440)")
     parser.add_argument("reason", nargs="?", default="default", help="Reason for shunning (default: 'default')")
 
