@@ -16,14 +16,28 @@ def main():
 
     args = parser.parse_args()
 
+    iplist_addr = os.getenv("IPLIST_ADDR")
+    iplist_ns = os.getenv("IPLIST_NS")
+    iplist_path = os.getenv("IPLIST_PATH")
+
+    if not iplist_addr:
+        print("Error: IPLIST_ADDR environment variable is required.", file=sys.stderr)
+        sys.exit(1)
+    if not iplist_ns:
+        print("Error: IPLIST_NS environment variable is required.", file=sys.stderr)
+        sys.exit(1)
+    if not iplist_path:
+        print("Error: IPLIST_PATH environment variable is required.", file=sys.stderr)
+        sys.exit(1)
+
     # Fetch API key from Vault
-    apikey = vault_read(namespace='infra', secret_path='nw/shunip', field='apikey')
+    apikey = vault_read(namespace=iplist_ns, secret_path=iplist_path, field='apikey')
     if not apikey:
         print("Error: Could not retrieve API key from Vault.", file=sys.stderr)
         sys.exit(1)
 
     print(f"API Key: {apikey}")
-    url = 'https://jdata1.comp.nus.edu.sg/ip-filters/'
+    url = f"{iplist_addr.rstrip('/')}/ip-filters/"
     headers = {
         'accept': 'application/json',
         'Authorization': f'Bearer {apikey}',
