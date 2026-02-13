@@ -11,7 +11,7 @@ load_dotenv()
 def main():
     parser = argparse.ArgumentParser(description="IP list management.")
     parser.add_argument("ip_address", help="IP address to add")
-    parser.add_argument("timeout", type=int, nargs="?", default=1440, help="Timeout in minutes (default: 1440)")
+    parser.add_argument("timeout", type=int, nargs="?", default=86400, help="Timeout in seconds (default: 86400)")
     parser.add_argument("reason", nargs="?", default="default", help="Reason for shunning (default: 'default')")
 
     args = parser.parse_args()
@@ -44,7 +44,7 @@ def main():
     }
     data = {
         "ip_address": args.ip_address,
-        "timeout_minutes": args.timeout,
+        "timeout_seconds": args.timeout,
         "reason": args.reason
     }
 

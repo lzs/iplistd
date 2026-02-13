@@ -38,7 +38,7 @@ curl -X POST "http://localhost:8000/ip-filters/" \
      -H "Content-Type: application/json" \
      -d '{
        "ip_address": "203.0.113.45",
-       "timeout_minutes": 30
+       "timeout_seconds": 30
      }'
 
 ## iplistc.py

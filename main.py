@@ -56,7 +56,8 @@ class IPFilterDB(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     ip_address = Column(String, index=True)
-    timeout_minutes = Column(Integer)
+    # Keep underlying DB column name for backward compatibility with existing SQLite files.
+    timeout_seconds = Column("timeout_minutes", Integer)
     created_at = Column(DateTime, default=datetime.utcnow)
     expires_at = Column(DateTime)
     is_active = Column(Boolean, default=True)
@@ -69,7 +70,7 @@ Base.metadata.create_all(bind=engine)
 # Pydantic models
 class IPFilterCreate(BaseModel):
     ip_address: str
-    timeout_minutes: int
+    timeout_seconds: int
     reason: Optional[str] = None
     
     @validator('ip_address')
@@ -102,18 +103,18 @@ class IPFilterCreate(BaseModel):
             else:
                 raise ValueError('Invalid IP address or CIDR notation')
     
-    @validator('timeout_minutes')
+    @validator('timeout_seconds')
     def validate_timeout(cls, v):
         if v <= 0:
             raise ValueError('Timeout must be greater than 0')
-        if v > 525600:  # 1 year in minutes
+        if v > 31536000:  # 1 year in seconds
             raise ValueError('Timeout cannot exceed 1 year')
         return v
 
 class IPFilterResponse(BaseModel):
     id: int
     ip_address: str
-    timeout_minutes: int
+    timeout_seconds: int
     created_at: datetime
     expires_at: datetime
     is_active: bool
@@ -124,7 +125,7 @@ class IPFilterResponse(BaseModel):
         from_attributes = True
 
 class IPFilterUpdate(BaseModel):
-    timeout_minutes: Optional[int] = None
+    timeout_seconds: Optional[int] = None
     reason: Optional[str] = None
     is_active: Optional[bool] = None
 
@@ -549,7 +550,7 @@ async def add_ip_filter(
     user_info: dict = Depends(require_permission("write"))
 ):
     """
-    Add an IP address to the filter list with a timeout value.
+    Add an IP address to the filter list with a timeout value in seconds.
     Requires 'write' permission.
     """
     # Check if IP already exists and is active
@@ -561,8 +562,8 @@ async def add_ip_filter(
     api_key_id = user_info.get("api_key_id") if user_info else None
 
     if existing:
-        existing.timeout_minutes = ip_filter.timeout_minutes
-        existing.expires_at = datetime.utcnow() + timedelta(minutes=ip_filter.timeout_minutes)
+        existing.timeout_seconds = ip_filter.timeout_seconds
+        existing.expires_at = datetime.utcnow() + timedelta(seconds=ip_filter.timeout_seconds)
         existing.reason = ip_filter.reason or existing.reason
         existing.created_at = datetime.utcnow()
         existing.api_key_id = api_key_id
@@ -570,11 +571,11 @@ async def add_ip_filter(
         db.refresh(existing)
         return existing
 
-    expires_at = datetime.utcnow() + timedelta(minutes=ip_filter.timeout_minutes)
+    expires_at = datetime.utcnow() + timedelta(seconds=ip_filter.timeout_seconds)
 
     db_ip_filter = IPFilterDB(
         ip_address=ip_filter.ip_address,
-        timeout_minutes=ip_filter.timeout_minutes,
+        timeout_seconds=ip_filter.timeout_seconds,
         expires_at=expires_at,
         reason=ip_filter.reason,
         api_key_id=api_key_id
@@ -636,9 +637,9 @@ async def update_ip_filter(
     if not ip_filter:
         raise HTTPException(status_code=404, detail="IP filter not found")
     
-    if ip_filter_update.timeout_minutes is not None:
-        ip_filter.timeout_minutes = ip_filter_update.timeout_minutes
-        ip_filter.expires_at = datetime.utcnow() + timedelta(minutes=ip_filter_update.timeout_minutes)
+    if ip_filter_update.timeout_seconds is not None:
+        ip_filter.timeout_seconds = ip_filter_update.timeout_seconds
+        ip_filter.expires_at = datetime.utcnow() + timedelta(seconds=ip_filter_update.timeout_seconds)
 
     if ip_filter_update.reason is not None:
         ip_filter.reason = ip_filter_update.reason
