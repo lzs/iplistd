@@ -4,3 +4,4 @@ test_client_auth.py
 # Ignore things like .venv/, .env, but we still want .ignore
 .*
 !.gitignore
+vault.py
