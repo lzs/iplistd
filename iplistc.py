@@ -4,6 +4,8 @@ import sys
 from dotenv import load_dotenv
 import os
 import requests
+import shlex
+import json
 from vault import vault_read
 
 load_dotenv()
@@ -13,6 +15,7 @@ def main():
     parser.add_argument("ip_address", help="IP address to add")
     parser.add_argument("timeout", type=int, nargs="?", default=86400, help="Timeout in seconds (default: 86400)")
     parser.add_argument("reason", nargs="?", default="default", help="Reason for shunning (default: 'default')")
+    parser.add_argument("--debug-curl", action="store_true", help="Print equivalent curl command to stderr")
 
     args = parser.parse_args()
 
@@ -47,6 +50,15 @@ def main():
         "timeout_seconds": args.timeout,
         "reason": args.reason
     }
+    curl_debug = (
+        f"curl -X POST {shlex.quote(url)} "
+        f"-H {shlex.quote(f'accept: {headers['accept']}')} "
+        f"-H {shlex.quote(f'Authorization: {headers['Authorization']}')} "
+        f"-H {shlex.quote(f'Content-Type: {headers['Content-Type']}')} "
+        f"--data-raw {shlex.quote(json.dumps(data))}"
+    )
+    if args.debug_curl:
+        print(f"DEBUG curl command: {curl_debug}", file=sys.stderr)
 
     try:
         response = requests.post(url, headers=headers, json=data)
